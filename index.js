@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 });
 
 // GET ALL BOOKS
-app.get('/books', (req, res) => {
+app.get('/books', auth, (req, res) => {
     res.json(books);
 });
 
