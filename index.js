@@ -1,4 +1,7 @@
-//api key: "44a5cb8b-1081-4b84-8653-a62c320cfed3"
+// "apiKey": "65cd2ea5-267f-4e46-94e9-f908249e4302"
+// "token": "c98f2df3-54ea-42cd-a68d-7a3568d024b1"
+
+
 const express = require('express');
 const app = express();
 const PORT = 3000;
