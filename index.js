@@ -1,3 +1,4 @@
+//api key: "44a5cb8b-1081-4b84-8653-a62c320cfed3"
 const express = require('express');
 const app = express();
 const PORT = 3000;
@@ -5,64 +6,74 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// In-memory data storage
+let books = [
+    { bookId: 101, title: "The Lost Code", author: "Ethan Hunt", publisher: "CodeWorld" },
+    { bookId: 102, title: "AI Revolution", author: "Sarah Connor", publisher: "TechFuture" },
+    { bookId: 103, title: "Cyber Wars", author: "John Reese", publisher: "Digital Press" },
+    { bookId: 104, title: "Quantum Realm", author: "Jane Doe", publisher: "Science Hub" }
+];
+
+// Welcome route
 app.get('/', (req, res) => {
     res.send('Welcome to the Books API!');
 });
 
-let books = [
-    { bookId: 1, title: "The Charley", author: "Charley", publisher: "publisher1" },
-    { bookId: 2, title: "The Rolly", author: "Rolly", publisher: "publisher2" },
-    { bookId: 3, title: "The Ansel", author: "Ansel", publisher: "publisher3" },
-    { bookId: 4, title: "The Mark", author: "Mark", publisher: "publisher4" }
-];
-
-//POST
-app.post('/books', (req, res) => {
-    const { bookId, title, author, publisher } = req.body;
-
-    // Ensure all fields are provided
-    if (!bookId || !title || !author || !publisher) {
-        return res.status(400).json({ error: "Missing book fields" });
-    }
-
-    const newBook = { bookId, title, author, publisher };
-    books.push(newBook);
-
-    res.status(201).json({ message: "Book added", book: newBook });
-});
-
-//ALL BOOKS
+// Get all books
 app.get('/books', (req, res) => {
     res.json(books);
 });
 
-//SPECIFIC BY ID
+// Get a book by ID
 app.get('/books/:id', (req, res) => {
     const book = books.find(b => b.bookId == req.params.id);
     if (!book) return res.status(404).json({ error: "Book not found" });
     res.json(book);
 });
 
-//PATCH
+// Add a new book
+app.post('/books', (req, res) => {
+    const requiredFields = ["title", "author", "publisher"];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+        return res.status(400).json({ error: `Missing fields: ${missingFields.join(", ")}` });
+    }
+    
+    const newBook = {
+        bookId: books.length ? books[books.length - 1].bookId + 1 : 101,
+        title: req.body.title,
+        author: req.body.author,
+        publisher: req.body.publisher
+    };
+    books.push(newBook);
+    res.status(201).json({ message: "Book added", book: newBook });
+});
+
+// Update a book by ID
 app.patch('/books/:id', (req, res) => {
     const bookIndex = books.findIndex(b => b.bookId == req.params.id);
     if (bookIndex === -1) return res.status(404).json({ error: "Book not found" });
-
-    // Update only provided fields (existing fields are kept)
+    
     books[bookIndex] = { ...books[bookIndex], ...req.body };
-
     res.json({ message: "Book updated", book: books[bookIndex] });
 });
 
-//DELETE
+// Delete a book by ID
 app.delete('/books/:id', (req, res) => {
-    books = books.filter(b => b.bookId != req.params.id);
+    const bookIndex = books.findIndex(b => b.bookId == req.params.id);
+    if (bookIndex === -1) return res.status(404).json({ error: "Book not found" });
+    
+    books.splice(bookIndex, 1);
     res.json({ message: "Book deleted" });
 });
 
-//LOGIN
+// User login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+    }
 
     if (username === 'admin' && password === 'admin123') {
         res.json({ message: "Login success" });
@@ -71,4 +82,5 @@ app.post('/login', (req, res) => {
     }
 });
 
+// Start the server
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
